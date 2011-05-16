@@ -11,14 +11,14 @@ namespace MigrationsTest
     [TestClass]
     public class Test1
     {
-        private MigrationRunner runner;
+        private MigrationService runner;
 
         [TestInitialize]
         public void SetUp()
         {
             IVersionDataSource versionDataSource = new StubVersionDataSource();
             versionDataSource.SetVersionNumber(0);
-            this.runner = new MigrationRunner(versionDataSource);
+            this.runner = new MigrationService(versionDataSource);
         }
 
         [TestMethod]
@@ -34,7 +34,7 @@ namespace MigrationsTest
         public void TestGetMigrationAttributes()
         {
             Migration1 foo = new Migration1();
-            MigrationAttribute attr = MigrationRunner.GetMigrationsAttributes(foo);
+            MigrationAttribute attr = MigrationService.GetMigrationsAttributes(foo);
             Assert.AreEqual(attr.Version, 1.0);
         }
 
@@ -42,7 +42,7 @@ namespace MigrationsTest
         public void TestGetMigrationNoAttributes()
         {
             IMigration foo = new MigrationNoAttributes();
-            MigrationAttribute attr = MigrationRunner.GetMigrationsAttributes(foo);
+            MigrationAttribute attr = MigrationService.GetMigrationsAttributes(foo);
             Assert.IsNull(attr);
         }
 
@@ -50,7 +50,7 @@ namespace MigrationsTest
         public void TestGetMigrationWrongAttributes()
         {
             IMigration foo = new MigrationWrongAttributes();
-            MigrationAttribute attr = MigrationRunner.GetMigrationsAttributes(foo);
+            MigrationAttribute attr = MigrationService.GetMigrationsAttributes(foo);
             Assert.IsNull(attr);
         }
 
@@ -65,7 +65,7 @@ namespace MigrationsTest
                 migration1
             };
 
-            migrations.Sort(MigrationRunner.MigrationSorter);
+            migrations.Sort(MigrationService.MigrationSorter);
             Assert.AreSame(migrations[0], migration1);
 
             migrations = new List<IMigration>{
@@ -73,7 +73,7 @@ namespace MigrationsTest
                 migration2
             };
 
-            migrations.Sort(MigrationRunner.MigrationSorter);
+            migrations.Sort(MigrationService.MigrationSorter);
             Assert.AreSame(migrations[0], migration1);
         }
 
@@ -81,21 +81,21 @@ namespace MigrationsTest
         public void TestGetMigrationVersionNumber()
         {
             IMigration migration1 = new Migration1();
-            Assert.AreEqual(1.0, MigrationRunner.GetMigrationVersionNumber(migration1));
+            Assert.AreEqual(1.0, MigrationService.GetMigrationVersionNumber(migration1));
         }
 
         [TestMethod]
         public void TestGetMigrationVersionNumberNoAttributes()
         {
             IMigration migration = new MigrationNoAttributes();
-            Assert.AreEqual(-1, MigrationRunner.GetMigrationVersionNumber(migration));
+            Assert.AreEqual(-1, MigrationService.GetMigrationVersionNumber(migration));
         }
 
         [TestMethod]
         public void TestGetMigrationVersionNumberWrongAttributes()
         {
             IMigration migration = new MigrationWrongAttributes();
-            Assert.AreEqual(-1, MigrationRunner.GetMigrationVersionNumber(migration));
+            Assert.AreEqual(-1, MigrationService.GetMigrationVersionNumber(migration));
         }
 
         [TestMethod]

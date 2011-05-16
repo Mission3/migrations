@@ -7,12 +7,12 @@ using System.Diagnostics;
 
 namespace Migrations
 {
-    public class MigrationRunner
+    public class MigrationService
     {
         private IVersionDataSource versionDataSource;
         public List<IMigration> Migrations {get;set;}
 
-        public MigrationRunner(IVersionDataSource versionDataSource)
+        public MigrationService(IVersionDataSource versionDataSource)
         {
             this.versionDataSource = versionDataSource;
             this.Migrations = new List<IMigration>();
@@ -128,6 +128,5 @@ namespace Migrations
 
             return results;
         }
-
     }
 }
