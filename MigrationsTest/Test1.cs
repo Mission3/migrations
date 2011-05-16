@@ -12,11 +12,12 @@ namespace MigrationsTest
     public class Test1
     {
         private MigrationService runner;
+        private IVersionDataSource versionDataSource;
 
         [TestInitialize]
         public void SetUp()
         {
-            IVersionDataSource versionDataSource = new StubVersionDataSource();
+            versionDataSource = new StubVersionDataSource();
             versionDataSource.SetVersionNumber(0);
             this.runner = new MigrationService(versionDataSource);
         }
@@ -28,6 +29,11 @@ namespace MigrationsTest
             this.runner.LoadMigrationsFromAssembly(asm);
             List<IMigration> migrations = this.runner.Migrations;
             Assert.IsTrue(migrations.Count == 4);
+            foreach (var m in migrations)
+            {
+                Type foo = m.GetType();
+                Assert.IsTrue(foo.IsClass && foo.GetInterface("IMigration") != null);
+            }
         }
 
         [TestMethod]
@@ -112,7 +118,8 @@ namespace MigrationsTest
             {
                 this.runner.Migrations = migrations;
                 this.runner.RunUpMigrations();
-                Assert.IsTrue(true);
+                // Assert that we ran two upgrade migrations, are at version 2
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == 2);
             }
             catch(Exception ex)
             {
@@ -132,9 +139,12 @@ namespace MigrationsTest
 
             try
             {
+                this.versionDataSource.SetVersionNumber(2);
                 this.runner.Migrations = migrations;
                 this.runner.RunDownMigrations();
-                Assert.IsTrue(true);
+
+                // Assert that we end up downgraded to version 1
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == 1);
             }
             catch(Exception ex)
             {

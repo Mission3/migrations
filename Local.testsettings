@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <TestSettings name="Local" id="a2209c79-ecec-4351-a378-97cae1e1c35a" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Description>These are default test settings for a local test run.</Description>
-  <Execution>
+  <Execution hostProcessPlatform="MSIL">
     <Hosts skipUnhostableTests="false" />
     <TestTypeSpecific>
       <UnitTestRunConfig testTypeId="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b">
@@ -16,9 +16,7 @@
           <Configuration>
             <CodeCoverage xmlns="">
               <Regular>
-                <CodeCoverageItem binaryFile="bin\Debug\SPMigration.dll" pdbFile="bin\Debug\SPMigration.pdb" instrumentInPlace="true" />
-                <CodeCoverageItem binaryFile="SPMigrationTest\bin\Debug\SPMigrationTest.dll" pdbFile="SPMigrationTest\bin\Debug\SPMigrationTest.pdb" instrumentInPlace="true" />
-                <CodeCoverageItem binaryFile="C:\Users\Administrator\Mission3SourceGit\globaltrack\GlobalTrack\GTMigrations\bin\Debug\GTMigrations.dll" pdbFile="C:\Users\Administrator\Mission3SourceGit\globaltrack\GlobalTrack\GTMigrations\bin\Debug\GTMigrations.pdb" instrumentInPlace="true" />
+                <CodeCoverageItem binaryFile="Migrations\bin\Debug\Migrations.dll" pdbFile="Migrations\bin\Debug\Migrations.pdb" instrumentInPlace="true" />
               </Regular>
             </CodeCoverage>
           </Configuration>
