@@ -241,27 +241,5 @@ namespace MigrationsTest
 
             Assert.AreEqual(m2, this.runner.Migrations[0]);
         }
-
-        //[TestMethod]
-        //public void TestRunMigrations()
-        //{
-        //    IMigration migration1 = new Migration1();
-        //    IMigration migration2 = new Migration2();
-        //    List<IMigration> migrations = new List<IMigration>() {
-        //        migration1,
-        //        migration2
-        //    };
-
-        //    try
-        //    {
-        //        this.runner.RunMigrations(migrations, m => m.Up());
-        //        this.runner.RunMigrations(migrations, m => m.Down());
-        //        Assert.IsTrue(true);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Assert.Fail(ex.Message);
-        //    }
-        //}
     }
 }
