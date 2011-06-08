@@ -146,6 +146,31 @@ namespace MigrationsTest
         }
 
         [TestMethod]
+        public void TestRunUpMigrationsBogus()
+        {
+            IMigration migration1 = new MigrationNoAttributes();
+            IMigration migration2 = new MigrationWrongAttributes();
+            List<IMigration> migrations = new List<IMigration>() {
+                migration1,
+                migration2
+            };
+
+            try
+            {
+                const int SCHEMA_VERSION = 10;
+                this.versionDataSource.SetVersionNumber(SCHEMA_VERSION);
+                this.runner.Migrations = migrations;
+                this.runner.RunUpMigrations();
+                // Assert that we didn't run the bogus migrations
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == SCHEMA_VERSION);
+            }
+            catch(Exception ex)
+            {
+                Assert.Fail(ex.Message);
+            }
+        }
+        
+        [TestMethod]
         public void TestRunDownMigrations()
         {
             IMigration migration1 = new Migration1();
@@ -163,6 +188,33 @@ namespace MigrationsTest
 
                 // Assert that we end up downgraded to version 1
                 Assert.IsTrue(this.versionDataSource.GetVersionNumber() == 1);
+            }
+            catch(Exception ex)
+            {
+                Assert.Fail(ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public void TestRunDownMigrationsBogus()
+        {
+            IMigration migration1 = new MigrationNoAttributes();
+            IMigration migration2 = new MigrationWrongAttributes();
+            List<IMigration> migrations = new List<IMigration>() {
+                migration1,
+                migration2
+            };
+
+            try
+            {
+                const int SCHEMA_VERSION = 10;
+                this.versionDataSource.SetVersionNumber(SCHEMA_VERSION);
+                
+                this.runner.Migrations = migrations;
+                this.runner.RunDownMigrations();
+
+                // Assert that we didn't run the bogus migrations
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == SCHEMA_VERSION);
             }
             catch(Exception ex)
             {
