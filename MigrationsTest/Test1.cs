@@ -26,13 +26,27 @@ namespace MigrationsTest
         public void TestLoadMigrationsFromAssembly()
         {
             Assembly asm = Assembly.GetExecutingAssembly();
-            this.runner.LoadMigrationsFromAssembly(asm);
+            this.runner.LoadMigrationsFromAssembly(asm); // Only assemblies with default empty ctor will get loaded
             List<IMigration> migrations = this.runner.Migrations;
-            Assert.IsTrue(migrations.Count == 4);
+            Assert.IsTrue(migrations.Count == 2); // Migration1 and Migration2 should be only ones loaded
             foreach (var m in migrations)
             {
                 Type foo = m.GetType();
-                Assert.IsTrue(foo.IsClass && foo.GetInterface("IMigration") != null);
+                Assert.IsTrue(foo.IsClass && foo.GetInterface("IMigration") != null && MigrationService.GetMigrationsAttributes(m) != null);
+            }
+        }
+
+        [TestMethod]
+        public void TestLoadMigrationsFromAssemblyWithParams()
+        {
+            Assembly asm = Assembly.GetExecutingAssembly();
+            this.runner.LoadMigrationsFromAssembly(asm, ""); // Load migrations with default ctor, and optionally if ctor takes a string
+            List<IMigration> migrations = this.runner.Migrations;
+            Assert.IsTrue(migrations.Count == 3); // Migration1, Migration2, and MigrationWithCTorParams should be loaded
+            foreach (var m in migrations)
+            {
+                Type foo = m.GetType();
+                Assert.IsTrue(foo.IsClass && foo.GetInterface("IMigration") != null && MigrationService.GetMigrationsAttributes(m) != null);
             }
         }
 

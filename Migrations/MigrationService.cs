@@ -59,7 +59,7 @@ namespace Migrations
             // Sort in ascending order
             this.Migrations.Sort(MigrationSorter);
             // Reverse sort to descending
-            this.Migrations.Reverse();
+            this.Migrations.Reverse(); // TODO: Create a descending sorter instead of doing two sorts.
 
             int schemaVersion = this.versionDataSource.GetVersionNumber();
             this.RunMigrations(m => m.Down(), delegate(IMigration migration){
@@ -119,9 +119,28 @@ namespace Migrations
                 {
                     if (t.IsClass && t.GetInterface("IMigration") != null)
                     {
-                        // Create instance of the migration, pass in args to the CTor
-                        IMigration instance = Activator.CreateInstance(t, args) as IMigration;
-                        if (instance != null)
+                        // Create instance of the migration, pass in args to the CTor if needed
+                        ConstructorInfo[] ctors = t.GetConstructors();
+                        IMigration instance = null;
+
+                        if(ctors.Length > 0)
+                        {
+                            ConstructorInfo ctorInfo = ctors[0];
+                            ParameterInfo [] paramInfo = ctorInfo.GetParameters();
+
+                            // Check that the ctor has params, is public, and that we passed in args
+                            if (paramInfo.Length > 0 && ctorInfo.IsPublic && args.Length > 0)
+                            {
+                                instance = Activator.CreateInstance(t, args) as IMigration;
+                            }
+                            else if(paramInfo.Length == 0 && ctorInfo.IsPublic) // Default empty CTor
+                            {
+                                instance = Activator.CreateInstance(t) as IMigration;
+                            }
+                            // instance will be null if a ctor requires params and none were passed in
+                        }
+                        
+                        if (instance != null && GetMigrationsAttributes(instance) != null)
                         {
                             this.Migrations.Add(instance);
                         }

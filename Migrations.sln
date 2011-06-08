@@ -54,6 +54,7 @@ Global
 		{80FF3FCF-F3CA-44AD-B759-E9A827231885}.Release|x64.ActiveCfg = Release|x64
 		{80FF3FCF-F3CA-44AD-B759-E9A827231885}.Release|x64.Build.0 = Release|x64
 		{80FF3FCF-F3CA-44AD-B759-E9A827231885}.Release|x86.ActiveCfg = Release|Any CPU
+		{80FF3FCF-F3CA-44AD-B759-E9A827231885}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
