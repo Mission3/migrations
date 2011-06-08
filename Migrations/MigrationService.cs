@@ -149,13 +149,32 @@ namespace Migrations
             }, predicate);
         }
 
+        public void MigrateToVersion(int versionTo)
+        {
+            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - MigrateToVersion() - Start");
+
+            // Helper function to call Up/Down based on the current version.
+            int schemaVersion = this.versionDataSource.GetVersionNumber();
+
+            if (versionTo > schemaVersion)
+            {
+                this.RunUpMigrations(versionTo);
+            }
+            else if (versionTo < schemaVersion)
+            {
+                this.RunDownMigrations(versionTo);
+            }
+
+            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - MigrateToVersion() - End");
+        }
+
         public void RunDownMigrations()
         {
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunDownMigrations() - Start");
 
             this.RunAllDownMigrationsOrToVersion(RUN_ALL_MIGRATIONS);
 
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunDownMigrations() - Start");
+            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunDownMigrations() - End");
         }
 
         public void RunDownMigrations(int versionTo)

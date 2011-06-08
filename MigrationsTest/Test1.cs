@@ -357,6 +357,7 @@ namespace MigrationsTest
                 Assert.Fail(ex.Message);
             }
         }
+
         [TestMethod]
         public void TestRunDownMigrationsBogus()
         {
@@ -376,6 +377,48 @@ namespace MigrationsTest
                 this.runner.RunDownMigrations();
 
                 // Assert that we didn't run the bogus migrations
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == SCHEMA_VERSION);
+            }
+            catch(Exception ex)
+            {
+                Assert.Fail(ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public void TestRunMigrateTo()
+        {
+            IMigration migration1 = new Migration1();
+            IMigration migration2 = new Migration2();
+            List<IMigration> migrations = new List<IMigration>() {
+                migration1,
+                migration2
+            };
+
+            try
+            {
+                int SCHEMA_VERSION = 2;
+                int MIGRATE_TO_VERSION = 1;
+
+                this.runner.Migrations = migrations;
+               
+                // Migrate down 
+                this.versionDataSource.SetVersionNumber(SCHEMA_VERSION);
+                this.runner.MigrateToVersion(MIGRATE_TO_VERSION);
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == MIGRATE_TO_VERSION);
+
+                // Migrate up
+                SCHEMA_VERSION = 1;
+                MIGRATE_TO_VERSION = 2;
+                this.versionDataSource.SetVersionNumber(SCHEMA_VERSION);
+                this.runner.MigrateToVersion(MIGRATE_TO_VERSION);
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == MIGRATE_TO_VERSION);
+
+                // no change
+                SCHEMA_VERSION = 1;
+                MIGRATE_TO_VERSION = 1;
+                this.versionDataSource.SetVersionNumber(SCHEMA_VERSION);
+                this.runner.MigrateToVersion(MIGRATE_TO_VERSION);
                 Assert.IsTrue(this.versionDataSource.GetVersionNumber() == SCHEMA_VERSION);
             }
             catch(Exception ex)
