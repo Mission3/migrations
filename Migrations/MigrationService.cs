@@ -223,6 +223,7 @@ namespace Migrations
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunMigrations() - Start");
 
             Trace.Indent();
+            MigrationAttribute prev = null;
             foreach (IMigration migration in this.Migrations)
             {
                 MigrationAttribute attribute = GetMigrationsAttributes(migration);
@@ -235,7 +236,16 @@ namespace Migrations
                 if (predicate.Invoke(migration))
                 {
                     action.Invoke(migration); // Action to invoke on migration
-                    // TODO: It might be nice to keep track of the last migration that ran, and if any migrations are skipped, emit a warning.
+
+                    if (prev != null)
+                    {
+                        // difference should be one, if not they loaded migrations with gaps in between them, or perhaps didn't decorate one with an attribute
+                        int difference = Math.Abs(attribute.Version - prev.Version);
+                        Trace.WriteLineIf(ts.TraceWarning, "Migrations executed in order but with a gap in between versions greater than 1. Make sure you didn't miss a migration attribute or use the wrong version number in the attribute.");
+                    }
+
+                    // Set current migration attribute to the previous for next iteration
+                    prev = attribute;
                 }
             }
 
