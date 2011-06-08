@@ -10,7 +10,7 @@ namespace Migrations
     public class MigrationService
     {
         private IVersionDataSource versionDataSource;
-        public List<IMigration> Migrations {get;set;}
+        public List<IMigration> Migrations { get; set; }
 
         private const string TRACE_SWITCH_NAME = "Migrations";
         private static TraceSwitch ts = new TraceSwitch(TRACE_SWITCH_NAME, String.Empty);
@@ -35,7 +35,8 @@ namespace Migrations
         {
             int schemaVersion = this.versionDataSource.GetVersionNumber();
             Predicate<IMigration> results = delegate(IMigration migration)
-            {                MigrationAttribute atr = GetMigrationsAttributes(migration);
+            {
+                MigrationAttribute atr = GetMigrationsAttributes(migration);
                 if (atr != null)
                 {
                     // Run down migrations that are less or equal to than the schema version
@@ -52,7 +53,8 @@ namespace Migrations
         {
             int schemaVersion = this.versionDataSource.GetVersionNumber();
             Predicate<IMigration> results = delegate(IMigration migration)
-            {                MigrationAttribute atr = GetMigrationsAttributes(migration);
+            {
+                MigrationAttribute atr = GetMigrationsAttributes(migration);
                 if (atr != null)
                 {
                     // Run down migrations that are less than or equal to than the schema version
@@ -233,6 +235,7 @@ namespace Migrations
                 if (predicate.Invoke(migration))
                 {
                     action.Invoke(migration); // Action to invoke on migration
+                    // TODO: It might be nice to keep track of the last migration that ran, and if any migrations are skipped, emit a warning.
                 }
             }
 
@@ -241,7 +244,7 @@ namespace Migrations
             Trace.Unindent();
         }
 
-        public void LoadMigrationsFromAssembly(Assembly asm, params object [] args)
+        public void LoadMigrationsFromAssembly(Assembly asm, params object[] args)
         {
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - LoadMigrationsFromAssembly() - Start");
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - LoadMigrationsFromAssembly() - Assembly: " + asm.FullName);
@@ -290,7 +293,7 @@ namespace Migrations
 
             Trace.Unindent();
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - LoadMigrationsFromAssembly() - End");
-        } 
+        }
 
         public static MigrationAttribute GetMigrationsAttributes(IMigration migration)
         {
