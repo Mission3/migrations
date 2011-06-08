@@ -146,6 +146,58 @@ namespace MigrationsTest
         }
 
         [TestMethod]
+        public void TestRunUpMigrationsTo()
+        {
+            IMigration migration1 = new Migration1();
+            IMigration migration2 = new Migration2();
+            List<IMigration> migrations = new List<IMigration>() {
+                migration1,
+                migration2
+            };
+
+            try
+            {
+                const int UPGRADE_TO_VERSION = 2;
+                this.runner.Migrations = migrations;
+                this.runner.RunUpMigrations(UPGRADE_TO_VERSION);
+                // Assert that we ran two upgrade migrations, are at version UGRADE_TO_VERSION
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == UPGRADE_TO_VERSION);
+            }
+            catch(Exception ex)
+            {
+                Assert.Fail(ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public void TestRunUpMigrationsToBogus()
+        {
+            IMigration migration1 = new Migration1();
+            IMigration migration2 = new Migration2();
+            List<IMigration> migrations = new List<IMigration>() {
+                migration1,
+                migration2
+            };
+
+            try
+            {
+                const int SCHEMA_VERSION = 2;
+                this.versionDataSource.SetVersionNumber(SCHEMA_VERSION);
+
+                const int UPGRADE_TO_VERSION = 1;
+                this.runner.Migrations = migrations;
+                this.runner.RunUpMigrations(UPGRADE_TO_VERSION);
+
+                // Assert that we did not run the bogus upgrade and that the schema version did not change
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == SCHEMA_VERSION);
+            }
+            catch(Exception ex)
+            {
+                Assert.Fail(ex.Message);
+            }
+        }
+
+        [TestMethod]
         public void TestRunUpMigrationsBogus()
         {
             IMigration migration1 = new MigrationNoAttributes();
@@ -171,6 +223,32 @@ namespace MigrationsTest
         }
         
         [TestMethod]
+        public void TestRunUpToMigrationsBogus()
+        {
+            IMigration migration1 = new MigrationNoAttributes();
+            IMigration migration2 = new MigrationWrongAttributes();
+            List<IMigration> migrations = new List<IMigration>() {
+                migration1,
+                migration2
+            };
+
+            try
+            {
+                const int SCHEMA_VERSION = 0;
+                const int UPGRADE_TO_VERSION = 2;
+                this.versionDataSource.SetVersionNumber(SCHEMA_VERSION);
+                this.runner.Migrations = migrations;
+                this.runner.RunUpMigrations(UPGRADE_TO_VERSION);
+                // Assert that we didn't run the bogus migrations
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == SCHEMA_VERSION);
+            }
+            catch(Exception ex)
+            {
+                Assert.Fail(ex.Message);
+            }
+        }
+
+        [TestMethod]
         public void TestRunDownMigrations()
         {
             IMigration migration1 = new Migration1();
@@ -186,8 +264,8 @@ namespace MigrationsTest
                 this.runner.Migrations = migrations;
                 this.runner.RunDownMigrations();
 
-                // Assert that we end up downgraded to version 1
-                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == 1);
+                // Assert that we end up downgraded to version 0
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == 0);
             }
             catch(Exception ex)
             {
@@ -195,6 +273,90 @@ namespace MigrationsTest
             }
         }
 
+        [TestMethod]
+        public void TestRunDownMigrationsToBogus()
+        {
+            IMigration migration1 = new MigrationWrongAttributes();
+            IMigration migration2 = new MigrationNoAttributes();
+            List<IMigration> migrations = new List<IMigration>() {
+                migration1,
+                migration2
+            };
+
+            try
+            {
+                const int SCHEMA_VERSION = 10;
+                this.versionDataSource.SetVersionNumber(SCHEMA_VERSION);
+
+                const int DOWNGRADE_TO_VERSION = 1;
+                this.runner.Migrations = migrations;
+                this.runner.RunDownMigrations(DOWNGRADE_TO_VERSION);
+
+                // Assert that we did not run the bogus downgrade and that the schema version did not change
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == SCHEMA_VERSION);
+            }
+            catch(Exception ex)
+            {
+                Assert.Fail(ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public void TestRunDownMigrationsToBogusVersion()
+        {
+            IMigration migration1 = new Migration1();
+            IMigration migration2 = new Migration2();
+            List<IMigration> migrations = new List<IMigration>() {
+                migration1,
+                migration2
+            };
+
+            try
+            {
+                const int SCHEMA_VERSION = 2;
+                this.versionDataSource.SetVersionNumber(SCHEMA_VERSION);
+
+                const int DOWNGRADE_TO_VERSION = 5;
+                this.runner.Migrations = migrations;
+                this.runner.RunDownMigrations(DOWNGRADE_TO_VERSION);
+                this.runner.RunDownMigrations(SCHEMA_VERSION);
+
+                // Assert that we did not run the bogus downgrade and that the schema version did not change
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == SCHEMA_VERSION);
+            }
+            catch(Exception ex)
+            {
+                Assert.Fail(ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public void TestRunDownMigrationsTo()
+        {
+            IMigration migration1 = new Migration1();
+            IMigration migration2 = new Migration2();
+            List<IMigration> migrations = new List<IMigration>() {
+                migration1,
+                migration2
+            };
+
+            try
+            {
+                const int DOWNGRADE_TO_VERSION = 1;
+                const int SCHEMA_VERSION = 2;
+
+                this.versionDataSource.SetVersionNumber(SCHEMA_VERSION);
+
+                this.runner.Migrations = migrations;
+                this.runner.RunDownMigrations(DOWNGRADE_TO_VERSION);
+                // Assert that we ran two downgrade migrations, are at version DOWNGRADE_TO_VERSION
+                Assert.IsTrue(this.versionDataSource.GetVersionNumber() == DOWNGRADE_TO_VERSION);
+            }
+            catch(Exception ex)
+            {
+                Assert.Fail(ex.Message);
+            }
+        }
         [TestMethod]
         public void TestRunDownMigrationsBogus()
         {

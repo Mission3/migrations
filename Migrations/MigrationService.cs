@@ -15,6 +15,8 @@ namespace Migrations
         private const string TRACE_SWITCH_NAME = "Migrations";
         private static TraceSwitch ts = new TraceSwitch(TRACE_SWITCH_NAME, String.Empty);
 
+        private const int RUN_ALL_MIGRATIONS = -1;
+
         public MigrationService(IVersionDataSource versionDataSource)
         {
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - CTOR - Start");
@@ -29,15 +31,49 @@ namespace Migrations
             set { this.Migrations[index] = value; }
         }
 
-        public void RunUpMigrations()
+        private Predicate<IMigration> GetDownMigrationPredicate()
         {
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunUpMigrations() - Start");
-
-            // Sort in ascending order
-            this.Migrations.Sort(MigrationSorter);
-
             int schemaVersion = this.versionDataSource.GetVersionNumber();
-            this.RunMigrations(m => m.Up(), delegate(IMigration migration){
+            Predicate<IMigration> results = delegate(IMigration migration)
+            {                MigrationAttribute atr = GetMigrationsAttributes(migration);
+                if (atr != null)
+                {
+                    // Run down migrations that are less or equal to than the schema version
+                    return atr.Version <= schemaVersion;
+                }
+
+                return false;
+            };
+
+            return results;
+        }
+
+        private Predicate<IMigration> GetDownMigrationPredicate(int versionTo)
+        {
+            int schemaVersion = this.versionDataSource.GetVersionNumber();
+            Predicate<IMigration> results = delegate(IMigration migration)
+            {                MigrationAttribute atr = GetMigrationsAttributes(migration);
+                if (atr != null)
+                {
+                    // Run down migrations that are less than or equal to than the schema version
+                    // and greater than the versionTo
+                    // Example:
+                    // 1 2 3 4 <- 4 is the current schemaVersion
+                    // Running down migrations to version 2 should execute Down() on 4 and 3
+                    return atr.Version > versionTo && atr.Version <= schemaVersion;
+                }
+
+                return false;
+            };
+
+            return results;
+        }
+
+        private Predicate<IMigration> GetUpMigrationPredicate()
+        {
+            int schemaVersion = this.versionDataSource.GetVersionNumber();
+            Predicate<IMigration> results = delegate(IMigration migration)
+            {
                 MigrationAttribute atr = GetMigrationsAttributes(migration);
                 if (atr != null)
                 {
@@ -47,34 +83,117 @@ namespace Migrations
                 }
 
                 return false;
-            });
+            };
+
+            return results;
+        }
+
+        private Predicate<IMigration> GetUpMigrationPredicate(int versionTo)
+        {
+            int schemaVersion = this.versionDataSource.GetVersionNumber();
+            Predicate<IMigration> results = delegate(IMigration migration)
+            {
+                MigrationAttribute atr = GetMigrationsAttributes(migration);
+                if (atr != null)
+                {
+                    // Run migrations that are greater than the schema version and less than/equal to the "versionTo"
+                    return atr.Version > schemaVersion && atr.Version <= versionTo;
+                }
+
+                return false;
+            };
+
+            return results;
+        }
+
+        public void RunUpMigrations(int versionTo)
+        {
+            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunUpMigrations(int versionTo) - Start");
+
+            this.RunAllUpMigrationsOrToVersion(versionTo);
 
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunUpMigrations() - End");
+        }
+
+        public void RunUpMigrations()
+        {
+            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunUpMigrations() - Start");
+
+            this.RunAllUpMigrationsOrToVersion(RUN_ALL_MIGRATIONS);
+
+            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunUpMigrations() - End");
+        }
+
+        private void RunAllUpMigrationsOrToVersion(int versionTo)
+        {
+            // Sort in ascending order
+            this.Migrations.Sort(MigrationSorter);
+            Predicate<IMigration> predicate = null;
+
+            if (versionTo > 0)
+            {
+                // Only run from current version -> versionTo
+                predicate = this.GetUpMigrationPredicate(versionTo);
+            }
+            else
+            {
+                // Run all migrations upgrades
+                predicate = this.GetUpMigrationPredicate();
+            }
+
+            this.RunMigrations(delegate(IMigration migration)
+            {
+                MigrationAttribute attribute = GetMigrationsAttributes(migration);
+                migration.Up();
+                this.versionDataSource.SetVersionNumber(attribute.Version);
+            }, predicate);
         }
 
         public void RunDownMigrations()
         {
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunDownMigrations() - Start");
 
-            // Sort in ascending order
-            this.Migrations.Sort(MigrationSorter);
-            // Reverse sort to descending
-            this.Migrations.Reverse(); // TODO: Create a descending sorter instead of doing two sorts.
-
-            int schemaVersion = this.versionDataSource.GetVersionNumber();
-            this.RunMigrations(m => m.Down(), delegate(IMigration migration){
-                MigrationAttribute atr = GetMigrationsAttributes(migration);
-                if (atr != null)
-                {
-                    // Run down migrations that are less or equal to than the schema version
-                    // TODO: Additional check here if we wanted to run downgrade to specific version
-                    return atr.Version <= schemaVersion;
-                }
-
-                return false;
-            });
+            this.RunAllDownMigrationsOrToVersion(RUN_ALL_MIGRATIONS);
 
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunDownMigrations() - Start");
+        }
+
+        public void RunDownMigrations(int versionTo)
+        {
+            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunDownMigrations(versionTo) - Start");
+
+            this.RunAllDownMigrationsOrToVersion(versionTo);
+
+            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunDownMigrations(versionTo) - Start");
+        }
+
+        private void RunAllDownMigrationsOrToVersion(int versionTo)
+        {
+            // Sort in ascending order
+            this.Migrations.Sort(MigrationSorter);
+            this.Migrations.Reverse();
+
+            Predicate<IMigration> predicate = null;
+
+            if (versionTo > 0)
+            {
+                // Only run from current version -> versionTo
+                predicate = this.GetDownMigrationPredicate(versionTo);
+            }
+            else
+            {
+                // Run all migrations upgrades
+                predicate = this.GetDownMigrationPredicate();
+            }
+
+            this.RunMigrations(delegate(IMigration migration)
+            {
+                MigrationAttribute attribute = GetMigrationsAttributes(migration);
+                migration.Down();
+
+                // The version we are downgrading to does not run it's down() method, therefore we will be off by 1 here
+                this.versionDataSource.SetVersionNumber(attribute.Version - 1);
+            }, predicate);
         }
 
         private void RunMigrations(Action<IMigration> action, Predicate<IMigration> predicate)
@@ -95,7 +214,6 @@ namespace Migrations
                 if (predicate.Invoke(migration))
                 {
                     action.Invoke(migration); // Action to invoke on migration
-                    this.versionDataSource.SetVersionNumber(attribute.Version);
                 }
             }
 
