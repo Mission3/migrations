@@ -112,38 +112,41 @@ namespace Migrations
             this.Migrations.Clear();
 
             Trace.Indent();
+
             foreach (Module module in modules)
             {
                 Type[] types = module.GetTypes();
                 foreach (Type t in types)
                 {
-                    if (t.IsClass && t.GetInterface("IMigration") != null)
+                    if (t.GetInterface("IMigration") == null)
                     {
-                        // Create instance of the migration, pass in args to the CTor if needed
-                        ConstructorInfo[] ctors = t.GetConstructors();
-                        IMigration instance = null;
+                        continue;
+                    }
 
-                        if(ctors.Length > 0)
-                        {
-                            ConstructorInfo ctorInfo = ctors[0];
-                            ParameterInfo [] paramInfo = ctorInfo.GetParameters();
+                    // Create instance of the migration, pass in args to the CTor if needed
+                    ConstructorInfo[] ctors = t.GetConstructors();
+                    IMigration instance = null;
 
-                            // Check that the ctor has params, is public, and that we passed in args
-                            if (paramInfo.Length > 0 && ctorInfo.IsPublic && args.Length > 0)
-                            {
-                                instance = Activator.CreateInstance(t, args) as IMigration;
-                            }
-                            else if(paramInfo.Length == 0 && ctorInfo.IsPublic) // Default empty CTor
-                            {
-                                instance = Activator.CreateInstance(t) as IMigration;
-                            }
-                            // instance will be null if a ctor requires params and none were passed in
-                        }
-                        
-                        if (instance != null && GetMigrationsAttributes(instance) != null)
+                    if (ctors.Length > 0)
+                    {
+                        ConstructorInfo ctorInfo = ctors[0];
+                        ParameterInfo[] paramInfo = ctorInfo.GetParameters();
+
+                        // Check that the ctor has params, is public, and that we passed in args
+                        if (paramInfo.Length > 0 && ctorInfo.IsPublic && args.Length > 0)
                         {
-                            this.Migrations.Add(instance);
+                            instance = Activator.CreateInstance(t, args) as IMigration;
                         }
+                        else if (paramInfo.Length == 0 && ctorInfo.IsPublic) // Default empty CTor
+                        {
+                            instance = Activator.CreateInstance(t) as IMigration;
+                        }
+                        // instance will be null if a ctor requires params and none were passed in
+                    }
+
+                    if (instance != null && GetMigrationsAttributes(instance) != null)
+                    {
+                        this.Migrations.Add(instance);
                     }
                 }
             }

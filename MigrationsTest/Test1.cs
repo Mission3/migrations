@@ -32,7 +32,9 @@ namespace MigrationsTest
             foreach (var m in migrations)
             {
                 Type foo = m.GetType();
-                Assert.IsTrue(foo.IsClass && foo.GetInterface("IMigration") != null && MigrationService.GetMigrationsAttributes(m) != null);
+                Assert.IsTrue(foo.IsClass);
+                Assert.IsNotNull(foo.GetInterface("IMigration"));
+                Assert.IsNotNull(MigrationService.GetMigrationsAttributes(m));
             }
         }
 
@@ -46,7 +48,9 @@ namespace MigrationsTest
             foreach (var m in migrations)
             {
                 Type foo = m.GetType();
-                Assert.IsTrue(foo.IsClass && foo.GetInterface("IMigration") != null && MigrationService.GetMigrationsAttributes(m) != null);
+                Assert.IsTrue(foo.IsClass);
+                Assert.IsNotNull(foo.GetInterface("IMigration"));
+                Assert.IsNotNull(MigrationService.GetMigrationsAttributes(m));
             }
         }
 
@@ -167,11 +171,23 @@ namespace MigrationsTest
         }
 
         [TestMethod]
-        public void TestIndexer()
+        public void TestIndexerGet()
         {
             var m1 = new Migration1();
             this.runner.Migrations.Add(m1);
             Assert.AreSame(m1, this.runner[0]);
+        }
+
+        [TestMethod]
+        public void TestIndexSet()
+        {
+            var m1 = new Migration1();
+            this.runner.Migrations.Add(m1);
+
+            var m2 = new Migration2();
+            this.runner[0] = m2;
+
+            Assert.AreEqual(m2, this.runner.Migrations[0]);
         }
 
         //[TestMethod]
