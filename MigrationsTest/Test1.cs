@@ -152,6 +152,14 @@ namespace MigrationsTest
             }
         }
 
+        [TestMethod]
+        public void TestIndexer()
+        {
+            var m1 = new Migration1();
+            this.runner.Migrations.Add(m1);
+            Assert.AreSame(m1, this.runner[0]);
+        }
+
         //[TestMethod]
         //public void TestRunMigrations()
         //{

@@ -23,6 +23,12 @@ namespace Migrations
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - CTOR - End");
         }
 
+        public IMigration this[int index]
+        {
+            get { return this.Migrations[index]; }
+            set { this.Migrations[index] = value; }
+        }
+
         public void RunUpMigrations()
         {
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunUpMigrations() - Start");
@@ -98,7 +104,7 @@ namespace Migrations
             Trace.Unindent();
         }
 
-        public void LoadMigrationsFromAssembly(Assembly asm)
+        public void LoadMigrationsFromAssembly(Assembly asm, params object [] args)
         {
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - LoadMigrationsFromAssembly() - Start");
             Trace.WriteLineIf(ts.TraceInfo, "MigrationService - LoadMigrationsFromAssembly() - Assembly: " + asm.FullName);
@@ -113,7 +119,8 @@ namespace Migrations
                 {
                     if (t.IsClass && t.GetInterface("IMigration") != null)
                     {
-                        IMigration instance = Activator.CreateInstance(t) as IMigration;
+                        // Create instance of the migration, pass in args to the CTor
+                        IMigration instance = Activator.CreateInstance(t, args) as IMigration;
                         if (instance != null)
                         {
                             this.Migrations.Add(instance);
