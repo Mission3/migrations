@@ -1,4 +1,4 @@
-Data Source Agnostic Migrations Framework
+Data Agnostic Migrations for .NET or DAMN
 =========================================
 
 Description
