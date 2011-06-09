@@ -9,6 +9,9 @@ Why?
 ----
 The current C# migration frameworks available only target specific databases. We wanted something that was database and datas tore agnostic and could target SharePoint lists. The downside to being data agnostic however, is you will need some helper libraries for your schema changes (to create tables, columns, etc).
 
+Usage
+-----
+You can use this library to migrate your data schema between versions and keep it in sync with your source code. You could also used this library as a framework for your own migrations library.
 
 Getting Started
 ---------------
