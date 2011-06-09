@@ -7,7 +7,7 @@ Ruby on Rails inspired migrations framework for C#.
 
 Why?
 ----
-The current C# migration frameworks available only target specific databases. We wanted something that was database and datas tore agnostic and could target SharePoint lists. The downside to being data agnostic however, is you will need some helper libraries for your schema changes (to create tables, columns, etc).
+The current C# migration frameworks available only target specific databases. We wanted something that was database and data store agnostic and could target SharePoint lists. The downside to being data agnostic however, is you will need some helper libraries for your schema changes (to create tables, columns, etc).
 
 Usage
 -----
