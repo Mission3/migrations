@@ -58,3 +58,4 @@ Getting Started
     TODOS:
     * More trace statements
     * Bundle helper libraries for common databases/data stores for easier Up() and Down() creation
+    * Create a console application to actually run the migrations, currently it is up to the user of the library to create this.
