@@ -1,9 +1,13 @@
 Data Source Agnostic Migrations Framework
 =========================================
 
+Description
+-----------
+Ruby on Rails inspired migrations framework for C#. 
+
 Why?
 ----
-The current C# migration frameworks available only target databases. We wanted something that was database agnostic and could target SharePoint lists. The downside to being data agnostic however, is you will need some helper libraries for your schema changes (to create tables, columns, etc).
+The current C# migration frameworks available only target specific databases. We wanted something that was database and datas tore agnostic and could target SharePoint lists. The downside to being data agnostic however, is you will need some helper libraries for your schema changes (to create tables, columns, etc).
 
 
 Getting Started
@@ -49,3 +53,4 @@ Getting Started
         runner.RunUpMigrations();
 
 4. See the MigrationsTest project for all of the Up/Down possibilities.
+5. MigrationService uses a TraceSwitch called "Migrations". Configure your app.config/web.config if you wish to use this.
