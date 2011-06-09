@@ -56,6 +56,6 @@ Getting Started
 5. MigrationService uses a TraceSwitch called "Migrations". Configure your app.config/web.config if you wish to use this.
 6. 
     TODOS:
-    * More trace statements
-    * Bundle helper libraries for common databases/data stores for easier Up() and Down() creation
+    * More trace statements.
+    * Bundle helper libraries for common databases/data stores for easier Up() and Down() creation.
     * Create a console application to actually run the migrations, currently it is up to the user of the library to create this.
