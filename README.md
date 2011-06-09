@@ -19,7 +19,7 @@ Getting Started
     * When a migration runs, it calls SetVersionNumber() on this data store to update the current version.
     * See the MigrationsTest project for a really simple in memory implementation of this in action.
 
-2. Create your first migration, implement the IMigration interface, and decorate the class with the Migration attribute.
+2. Create your first migration, implement the IMigration interface, and decorate the class with the Migration attribute. The helpers library contains sharepoint functions for creating lists/columns. More need to be created for other data stores.
 
         [Migration("First Version (1)", 1)] // Migration attribute takes a description and a version number.
         public class Migration1 : IMigration
@@ -57,5 +57,5 @@ Getting Started
 6. 
     TODOS:
     * More trace statements.
-    * Bundle helper libraries for common databases/data stores for easier Up() and Down() creation.
+    * Bundle more helpers for common databases/data stores for easier Up() and Down() creation.
     * Create a console application to actually run the migrations, currently it is up to the user of the library to create this.
