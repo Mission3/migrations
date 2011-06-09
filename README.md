@@ -54,3 +54,7 @@ Getting Started
 
 4. See the MigrationsTest project for all of the Up/Down possibilities.
 5. MigrationService uses a TraceSwitch called "Migrations". Configure your app.config/web.config if you wish to use this.
+6. 
+    TODOS:
+    * More trace statements
+    * Bundle helper libraries for common databases/data stores for easier Up() and Down() creation
