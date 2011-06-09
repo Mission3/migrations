@@ -1,4 +1,4 @@
-Data Agnostic Migrations for .NET or DAMN
+Data Agnostic Migrations for .NET (DAMN)
 =========================================
 
 Description
