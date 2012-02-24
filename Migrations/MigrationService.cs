@@ -207,9 +207,8 @@ namespace Migrations
 
         private void RunAllDownMigrationsOrToVersion(int versionTo)
         {
-            // Sort in ascending order
-            this.Migrations.Sort(MigrationSorter);
-            this.Migrations.Reverse();
+            // Sort in descending order
+            this.Migrations.Sort(MigrationSorterDesc);
 
             Predicate<IMigration> predicate = versionTo > 0 ? this.GetDownMigrationPredicate(versionTo) : this.GetDownMigrationPredicate();
 
@@ -363,6 +362,33 @@ namespace Migrations
 
             // xversion > yversion
             return 1;
+        }
+
+        public static int MigrationSorterDesc(IMigration x, IMigration y)
+        {
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - MigrationSorterDesc() - Called");
+            // Sort list by migration version numbers desc (queried by attributes on that class)
+
+            /*
+             * return 1 = x < y
+             * return 0 x = y
+             * return -1 = x is greater than y
+             */
+            int xversion = GetMigrationVersionNumber(x);
+            int yversion = GetMigrationVersionNumber(y);
+
+            if (xversion < yversion)
+            {
+                return 1;
+            }
+
+            if (xversion == yversion)
+            {
+                return 0;
+            }
+
+            // xversion > yversion
+            return -1;
         }
 
         public static int GetMigrationVersionNumber(IMigration migration)
