@@ -29,29 +29,27 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace Migrations
 {
     public class MigrationService
     {
-        private IVersionDataSource versionDataSource;
+        private readonly IVersionDataSource _versionDataSource;
         public List<IMigration> Migrations { get; set; }
 
-        private const string TRACE_SWITCH_NAME = "Migrations";
-        private static TraceSwitch ts = new TraceSwitch(TRACE_SWITCH_NAME, String.Empty);
+        private const string TraceSwitchName = "Migrations";
+        private static readonly TraceSwitch Ts = new TraceSwitch(TraceSwitchName, String.Empty);
 
-        private const int RUN_ALL_MIGRATIONS = -1;
+        private const int RunAllMigrations = -1;
 
         public MigrationService(IVersionDataSource versionDataSource)
         {
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - CTOR - Start");
-            this.versionDataSource = versionDataSource;
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - CTOR - Start");
+            this._versionDataSource = versionDataSource;
             this.Migrations = new List<IMigration>();
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - CTOR - End");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - CTOR - End");
         }
 
         public IMigration this[int index]
@@ -62,7 +60,7 @@ namespace Migrations
 
         private Predicate<IMigration> GetDownMigrationPredicate()
         {
-            int schemaVersion = this.versionDataSource.GetVersionNumber();
+            int schemaVersion = this._versionDataSource.GetVersionNumber();
             Predicate<IMigration> results = delegate(IMigration migration)
             {
                 MigrationAttribute atr = GetMigrationsAttributes(migration);
@@ -80,7 +78,7 @@ namespace Migrations
 
         private Predicate<IMigration> GetDownMigrationPredicate(int versionTo)
         {
-            int schemaVersion = this.versionDataSource.GetVersionNumber();
+            int schemaVersion = this._versionDataSource.GetVersionNumber();
             Predicate<IMigration> results = delegate(IMigration migration)
             {
                 MigrationAttribute atr = GetMigrationsAttributes(migration);
@@ -102,7 +100,7 @@ namespace Migrations
 
         private Predicate<IMigration> GetUpMigrationPredicate()
         {
-            int schemaVersion = this.versionDataSource.GetVersionNumber();
+            int schemaVersion = this._versionDataSource.GetVersionNumber();
             Predicate<IMigration> results = delegate(IMigration migration)
             {
                 MigrationAttribute atr = GetMigrationsAttributes(migration);
@@ -121,7 +119,7 @@ namespace Migrations
 
         private Predicate<IMigration> GetUpMigrationPredicate(int versionTo)
         {
-            int schemaVersion = this.versionDataSource.GetVersionNumber();
+            int schemaVersion = this._versionDataSource.GetVersionNumber();
             Predicate<IMigration> results = delegate(IMigration migration)
             {
                 MigrationAttribute atr = GetMigrationsAttributes(migration);
@@ -139,53 +137,43 @@ namespace Migrations
 
         public void RunUpMigrations(int versionTo)
         {
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunUpMigrations(int versionTo) - Start");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - RunUpMigrations(int versionTo) - Start");
 
             this.RunAllUpMigrationsOrToVersion(versionTo);
 
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunUpMigrations() - End");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - RunUpMigrations() - End");
         }
 
         public void RunUpMigrations()
         {
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunUpMigrations() - Start");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - RunUpMigrations() - Start");
 
-            this.RunAllUpMigrationsOrToVersion(RUN_ALL_MIGRATIONS);
+            this.RunAllUpMigrationsOrToVersion(RunAllMigrations);
 
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunUpMigrations() - End");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - RunUpMigrations() - End");
         }
 
         private void RunAllUpMigrationsOrToVersion(int versionTo)
         {
             // Sort in ascending order
             this.Migrations.Sort(MigrationSorter);
-            Predicate<IMigration> predicate = null;
 
-            if (versionTo > 0)
-            {
-                // Only run from current version -> versionTo
-                predicate = this.GetUpMigrationPredicate(versionTo);
-            }
-            else
-            {
-                // Run all migrations upgrades
-                predicate = this.GetUpMigrationPredicate();
-            }
+            Predicate<IMigration> predicate = versionTo > 0 ? this.GetUpMigrationPredicate(versionTo) : this.GetUpMigrationPredicate();
 
             this.RunMigrations(delegate(IMigration migration)
             {
                 MigrationAttribute attribute = GetMigrationsAttributes(migration);
                 migration.Up();
-                this.versionDataSource.SetVersionNumber(attribute.Version);
+                this._versionDataSource.SetVersionNumber(attribute.Version);
             }, predicate);
         }
 
         public void MigrateToVersion(int versionTo)
         {
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - MigrateToVersion() - Start");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - MigrateToVersion() - Start");
 
             // Helper function to call Up/Down based on the current version.
-            int schemaVersion = this.versionDataSource.GetVersionNumber();
+            int schemaVersion = this._versionDataSource.GetVersionNumber();
 
             if (versionTo > schemaVersion)
             {
@@ -196,25 +184,25 @@ namespace Migrations
                 this.RunDownMigrations(versionTo);
             }
 
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - MigrateToVersion() - End");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - MigrateToVersion() - End");
         }
 
         public void RunDownMigrations()
         {
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunDownMigrations() - Start");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - RunDownMigrations() - Start");
 
-            this.RunAllDownMigrationsOrToVersion(RUN_ALL_MIGRATIONS);
+            this.RunAllDownMigrationsOrToVersion(RunAllMigrations);
 
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunDownMigrations() - End");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - RunDownMigrations() - End");
         }
 
         public void RunDownMigrations(int versionTo)
         {
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunDownMigrations(versionTo) - Start");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - RunDownMigrations(versionTo) - Start");
 
             this.RunAllDownMigrationsOrToVersion(versionTo);
 
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunDownMigrations(versionTo) - Start");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - RunDownMigrations(versionTo) - Start");
         }
 
         private void RunAllDownMigrationsOrToVersion(int versionTo)
@@ -223,18 +211,7 @@ namespace Migrations
             this.Migrations.Sort(MigrationSorter);
             this.Migrations.Reverse();
 
-            Predicate<IMigration> predicate = null;
-
-            if (versionTo > 0)
-            {
-                // Only run from current version -> versionTo
-                predicate = this.GetDownMigrationPredicate(versionTo);
-            }
-            else
-            {
-                // Run all migrations upgrades
-                predicate = this.GetDownMigrationPredicate();
-            }
+            Predicate<IMigration> predicate = versionTo > 0 ? this.GetDownMigrationPredicate(versionTo) : this.GetDownMigrationPredicate();
 
             this.RunMigrations(delegate(IMigration migration)
             {
@@ -242,14 +219,14 @@ namespace Migrations
                 migration.Down();
 
                 // The version we are downgrading to does not run it's down() method, therefore we will be off by 1 here
-                this.versionDataSource.SetVersionNumber(attribute.Version - 1);
+                this._versionDataSource.SetVersionNumber(attribute.Version - 1);
             }, predicate);
         }
 
         private void RunMigrations(Action<IMigration> action, Predicate<IMigration> predicate)
         {
             Trace.Indent();
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunMigrations() - Start");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - RunMigrations() - Start");
 
             Trace.Indent();
             MigrationAttribute prev = null;
@@ -258,8 +235,8 @@ namespace Migrations
                 MigrationAttribute attribute = GetMigrationsAttributes(migration);
                 if (attribute != null)
                 {
-                    Trace.WriteLineIf(ts.TraceInfo, "Running Migration - Description: " + attribute.Description);
-                    Trace.WriteLineIf(ts.TraceInfo, "Running Migration - Version: " + attribute.Version);
+                    Trace.WriteLineIf(Ts.TraceInfo, "Running Migration - Description: " + attribute.Description);
+                    Trace.WriteLineIf(Ts.TraceInfo, "Running Migration - Version: " + attribute.Version);
                 }
 
                 if (predicate.Invoke(migration))
@@ -269,8 +246,15 @@ namespace Migrations
                     if (prev != null)
                     {
                         // difference should be one, if not they loaded migrations with gaps in between them, or perhaps didn't decorate one with an attribute
-                        int difference = Math.Abs(attribute.Version - prev.Version);
-                        Trace.WriteLineIf(ts.TraceWarning, "Migrations executed in order but with a gap in between versions greater than 1. Make sure you didn't miss a migration attribute or use the wrong version number in the attribute.");
+                        if (attribute != null)
+                        {
+                            int difference = Math.Abs(attribute.Version - prev.Version);
+                            if (difference != 1)
+                            {
+                                Trace.WriteLineIf(Ts.TraceWarning,
+                                                  "Migrations executed in order but with a gap in between versions greater than 1. Make sure you didn't miss a migration attribute or use the wrong version number in the attribute.");
+                            }
+                        }
                     }
 
                     // Set current migration attribute to the previous for next iteration
@@ -279,14 +263,14 @@ namespace Migrations
             }
 
             Trace.Unindent();
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - RunMigrations() - End");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - RunMigrations() - End");
             Trace.Unindent();
         }
 
         public void LoadMigrationsFromAssembly(Assembly asm, params object[] args)
         {
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - LoadMigrationsFromAssembly() - Start");
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - LoadMigrationsFromAssembly() - Assembly: " + asm.FullName);
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - LoadMigrationsFromAssembly() - Start");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - LoadMigrationsFromAssembly() - Assembly: " + asm.FullName);
             Module[] modules = asm.GetModules();
             this.Migrations.Clear();
 
@@ -331,12 +315,12 @@ namespace Migrations
             }
 
             Trace.Unindent();
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - LoadMigrationsFromAssembly() - End");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - LoadMigrationsFromAssembly() - End");
         }
 
         public static MigrationAttribute GetMigrationsAttributes(IMigration migration)
         {
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - GetMigrationsAttributes() - Start");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - GetMigrationsAttributes() - Start");
             Attribute[] attrs = Attribute.GetCustomAttributes(migration.GetType());
             MigrationAttribute results = null;
 
@@ -344,19 +328,19 @@ namespace Migrations
             {
                 if (attr is MigrationAttribute)
                 {
-                    MigrationAttribute atr = attr as MigrationAttribute;
+                    var atr = attr as MigrationAttribute;
                     results = atr;
                     break;
                 }
             }
 
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - GetMigrationsAttributes() - End");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - GetMigrationsAttributes() - End");
             return results;
         }
 
         public static int MigrationSorter(IMigration x, IMigration y)
         {
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - MigrationSorter() - Called");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - MigrationSorter() - Called");
             // Sort list by migration version numbers (queried by attributes on that class)
 
             /*
@@ -371,20 +355,19 @@ namespace Migrations
             {
                 return -1;
             }
-            else if (xversion == yversion)
+
+            if (xversion == yversion)
             {
                 return 0;
             }
-            else
-            {
-                // xversion > yversion
-                return 1;
-            }
+
+            // xversion > yversion
+            return 1;
         }
 
         public static int GetMigrationVersionNumber(IMigration migration)
         {
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - GetMigrationVersionNumber() - Start");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - GetMigrationVersionNumber() - Start");
             int results = -1;
             MigrationAttribute attr = GetMigrationsAttributes(migration);
             if (attr != null)
@@ -392,7 +375,7 @@ namespace Migrations
                 results = attr.Version;
             }
 
-            Trace.WriteLineIf(ts.TraceInfo, "MigrationService - GetMigrationVersionNumber() - End");
+            Trace.WriteLineIf(Ts.TraceInfo, "MigrationService - GetMigrationVersionNumber() - End");
             return results;
         }
     }
