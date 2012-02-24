@@ -28,9 +28,6 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Migrations;
 
 namespace MigrationsTest
@@ -42,8 +39,10 @@ namespace MigrationsTest
 
         public MigrationWithCTorParams(string foo)
         {
-            this._foo = foo;
+            _foo = foo;
         }
+
+        #region IMigration Members
 
         public void Up()
         {
@@ -54,5 +53,7 @@ namespace MigrationsTest
         {
             Console.WriteLine("4-20-2011 1.1 migration Down()");
         }
+
+        #endregion
     }
 }

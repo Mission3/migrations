@@ -28,9 +28,6 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Migrations;
 
 namespace MigrationsTest
@@ -38,6 +35,8 @@ namespace MigrationsTest
     [Migration("Second Migration (2)", 2)]
     public class Migration2 : IMigration
     {
+        #region IMigration Members
+
         public void Up()
         {
             Console.WriteLine("4-20-2011 1.1 migration Up()");
@@ -47,5 +46,7 @@ namespace MigrationsTest
         {
             Console.WriteLine("4-20-2011 1.1 migration Down()");
         }
+
+        #endregion
     }
 }
