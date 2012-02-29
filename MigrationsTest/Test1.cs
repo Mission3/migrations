@@ -55,7 +55,7 @@ namespace MigrationsTest
             Assembly asm = Assembly.GetExecutingAssembly();
             runner.LoadMigrationsFromAssembly(asm); // Only assemblies with default empty ctor will get loaded
             List<IMigration> migrations = runner.Migrations;
-            Assert.IsTrue(migrations.Count == 2); // Migration1 and Migration2 should be only ones loaded
+            Assert.IsTrue(migrations.Count == 3); // Migration1 and Migration2 should be only ones loaded
             foreach (IMigration m in migrations)
             {
                 Type foo = m.GetType();
@@ -72,7 +72,7 @@ namespace MigrationsTest
             runner.LoadMigrationsFromAssembly(asm, "");
                 // Load migrations with default ctor, and optionally if ctor takes a string
             List<IMigration> migrations = runner.Migrations;
-            Assert.IsTrue(migrations.Count == 3);
+            Assert.IsTrue(migrations.Count == 4);
                 // Migration1, Migration2, and MigrationWithCTorParams should be loaded
             foreach (IMigration m in migrations)
             {
@@ -487,6 +487,30 @@ namespace MigrationsTest
             runner[0] = m2;
 
             Assert.AreEqual(m2, runner.Migrations[0]);
+        }
+
+        [TestMethod]
+        public void TestRunUpMigrationsWithVersionsSkipped()
+        {
+            IMigration migration1 = new Migration1();
+            IMigration migration3 = new Migration3();
+            var migrations = new List<IMigration>
+                                 {
+                                     migration1,
+                                     migration3
+                                 };
+
+            try
+            {
+                runner.Migrations = migrations;
+                runner.RunUpMigrations();
+                // Assert that we ran two upgrade migrations, are at version UGRADE_TO_VERSION
+                Assert.IsTrue(versionDataSource.GetVersionNumber() == 3);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail(ex.Message);
+            }
         }
     }
 }
