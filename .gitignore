@@ -21,3 +21,4 @@ WcfService2/TestSite/web.config
 pkg
 pkgobj
 GlobalTrack/GlobalTrackData/GlobalTrackData.csproj.user
+_ReSharper.Migrations/*

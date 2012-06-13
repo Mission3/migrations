@@ -28,9 +28,6 @@
 //-----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Migrations;
 
 namespace MigrationsTest
@@ -38,6 +35,8 @@ namespace MigrationsTest
     [Serializable]
     public class MigrationWrongAttributes : IMigration
     {
+        #region IMigration Members
+
         public void Up()
         {
         }
@@ -45,5 +44,7 @@ namespace MigrationsTest
         public void Down()
         {
         }
+
+        #endregion
     }
 }

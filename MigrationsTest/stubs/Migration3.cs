@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="MigrationNoInterface.cs" company="Mission3, Inc.">
+// <copyright file="Migration3.cs" company="">
 //      Copyright (c) Mission3, Inc. All rights reserved.
 //
 //      The MIT License (MIT)
@@ -27,16 +27,26 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace MigrationsTests
+using System;
+using Migrations;
+
+namespace MigrationsTest
 {
-    public class MigrationNoInterface
+    [Migration("Third Migration (3)", 3)]
+    public class Migration3 : IMigration
     {
+        #region IMigration Members
+
         public void Up()
         {
+            Console.WriteLine("4-20-2011 1.1 migration Up()");
         }
 
         public void Down()
         {
+            Console.WriteLine("4-20-2011 1.1 migration Down()");
         }
+
+        #endregion
     }
 }
